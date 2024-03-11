@@ -1,4 +1,3 @@
-/*Bulgaru Alexandra - 312CD*/
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -10,10 +9,10 @@ int main(int argc, char const *argv[]) {
         int width = 0, height = 0, maxColor = 0;
         int i = 0, j = 0;
         fscanf(in, "P6 %d %d %d", &width, &height, &maxColor);
-        fseek(in, 1, SEEK_CUR);  // mut cursorul pentru citirea binara
-        ImagePixel **matrix = malloc(height * sizeof(ImagePixel *));  // aloc memorie pe linii
+        fseek(in, 1, SEEK_CUR);  // move the cursor for binary reading
+        ImagePixel **matrix = malloc(height * sizeof(ImagePixel *));  // allocate memory for rows
         for (i = 0; i < height; i++) {
-            matrix[i] = malloc(width * sizeof(ImagePixel));  // aloc memorie pe coloane
+            matrix[i] = malloc(width * sizeof(ImagePixel));  // allocate memory for columns
         }
         for (i = 0; i < height; i++) {
             for (j = 0; j < width; j++) {
@@ -26,7 +25,7 @@ int main(int argc, char const *argv[]) {
         int factor = atoi(argv[2]);
         Quadtree *root = NULL;
         divisions(matrix, &root, 0 , 0, width, factor);
-        int no_levels = heightTree(root);  // nr. niveluri arbore cuaternar
+        int no_levels = heightTree(root);  // number of levels in the quadtree
         int no_divisions = no_leaves(root);
         int max = largest_square(root);
         if (strcmp(argv[1], "-c1") == 0) {
@@ -50,7 +49,7 @@ int main(int argc, char const *argv[]) {
     }
     if (argc == 4 && strcmp(argv[1], "-d") == 0) {
         FILE *in = fopen(argv[2], "rb");
-        unsigned int size_img = 0;  // dimensiunea imaginii
+        unsigned int size_img = 0;  // image dimension
         fread(&size_img, sizeof(unsigned int), 1, in);
         Quadtree* qtree = create_tree(in, 0, 0, size_img, 0);
         fclose(in);

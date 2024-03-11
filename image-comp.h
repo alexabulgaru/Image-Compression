@@ -1,10 +1,9 @@
-/*Bulgaru Alexandra - 312CD*/
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <math.h>
-#ifndef _tema_2_h_
-#define _tema_2_h_
+#ifndef _image_comp_h_
+#define _image_comp_h_
 
 typedef struct pixel {
     unsigned char red;
@@ -13,10 +12,10 @@ typedef struct pixel {
 } ImagePixel;
 
 typedef struct node {
-    int x;  // coordonatele (x, y) pentru zonele pozei
+    int x;  // (x, y) coordinates for image areas
     int y;
     int size;
-    int level;  // nivelul la care se afla un nod
+    int level;  // the level at which a node is located
     unsigned char node_type;
     ImagePixel color;
     struct node* child1;
@@ -91,7 +90,7 @@ void freeQueue(Queue* q) {
 }
 
 void divisions(ImagePixel** img, Quadtree** root, int x, int y, int size, int factor) {
-    Quadtree *node = malloc(sizeof(struct node));  // initializez un nod de arbore
+    Quadtree *node = malloc(sizeof(struct node));  // initialize a tree node
     node->x = x;
     node->y = y;
     node->size = size;
@@ -104,39 +103,39 @@ void divisions(ImagePixel** img, Quadtree** root, int x, int y, int size, int fa
     unsigned long long sum_red = 0, sum_green = 0, sum_blue = 0;
     unsigned long long r = 0, g  = 0, b = 0, total_sum = 0;  // r = red - img[i][j].red
     for (i = x; i < x + size; i++) {
-        for (j = y; j < y + size; j++) {  // parcurg zonele in care este impartita imaginea si calculez sumele
+        for (j = y; j < y + size; j++) {
             sum_red += img[i][j].red;
             sum_green += img[i][j].green;
             sum_blue += img[i][j].blue;
         }
     }
-    red = sum_red / (size * size);  // media aritmetica pentru rosu
-    green = sum_green/ (size * size);  // media aritmetica pentru verde
-    blue = sum_blue / (size * size);  // media aritmetica pentru albastru
-    node->color.red = red;  // atribui valoarea obtinuta nodului corespunzator acelei zone
-    node->color.green = green;
-    node->color.blue = blue;
-    *root = node;  // update astfel incat root sa pointeze catre noul nod
-    for (i = x; i < x + size; i++) {
-        for (j = y; j < y + size; j++) {
-            r = red - img[i][j].red;
-            g = green - img[i][j].green;
-            b = blue - img[i][j].blue;
-            total_sum = total_sum + r * r + g * g + b * b;
+    red = sum_red / (size * size);  // arithmetic mean for red
+    green = sum_green/ (size * size);  // arithmetic mean for green
+    blue = sum_blue / (size * size);  // arithmetic mean for blue
+        node->color.red = red;  // assign the obtained value to the node corresponding to that area
+        node->color.green = green;
+        node->color.blue = blue;
+        *root = node;  // update so that root points to the new node
+        for (i = x; i < x + size; i++) {
+            for (j = y; j < y + size; j++) {
+                r = red - img[i][j].red;
+                g = green - img[i][j].green;
+                b = blue - img[i][j].blue;
+                total_sum = total_sum + r * r + g * g + b * b;
+            }
+        }
+        mean = total_sum / (3 * size * size);
+        if (mean > factor) {
+            node->node_type = 0;  // parent node, which is further divided into 4 leaves, each of size size / 2
+            divisions(img, &node->child1, x, y, size / 2, factor);  // the function is called again for each node
+            divisions(img, &node->child2, x, y + size / 2, size / 2, factor);
+            divisions(img, &node->child3, x + size / 2, y  + size / 2, size / 2, factor);
+            divisions(img, &node->child4, x + size / 2, y, size / 2, factor);
+        } else {
+            node->node_type = 1;  // leaf node, does not divide further
+            return;
         }
     }
-    mean = total_sum / (3 * size * size);
-    if (mean > factor) {
-        node->node_type = 0;  // nod parinte, care se divide mai departe in 4 frunze, fiecare de dimensiune size / 2
-        divisions(img, &node->child1, x, y, size / 2, factor);  // se reapeleaza functia pentru fiecare nod
-        divisions(img, &node->child2, x, y + size / 2, size / 2, factor);
-        divisions(img, &node->child3, x + size / 2, y  + size / 2, size / 2, factor);
-        divisions(img, &node->child4, x + size / 2, y, size / 2, factor);
-    } else {
-        node->node_type = 1;  // nod frunza, nu se mai divide
-        return;
-    }
-}
 
 int heightTree(Quadtree* tree) {
     if (tree == NULL) {
@@ -146,7 +145,7 @@ int heightTree(Quadtree* tree) {
         int child2_height = heightTree(tree->child2);
         int child3_height = heightTree(tree->child3);
         int child4_height = heightTree(tree->child4);
-        int height = child1_height;  // iau o variabila careia ii atribui inaltimea unui copil si apoi compar
+        int height = child1_height;  // take a variable to which I assign the height of a child and then compare
         if (child2_height > height) {
             height = child2_height;
         }
@@ -160,7 +159,7 @@ int heightTree(Quadtree* tree) {
     }
 }
 
-int no_leaves(Quadtree* tree) {  // nr. de blocuri (frunze) pentru care scorul similaritatii este mai mic sau egal decat pragul impus
+int no_leaves(Quadtree* tree) {  // number of blocks (leaves) for which the similarity score is less than or equal to the imposed threshold
     if (tree == NULL) {
         return 0;
     } else if (tree->child1 == NULL && tree->child2 == NULL && tree->child3 == NULL && tree->child4 == NULL) {
@@ -174,7 +173,7 @@ int no_leaves(Quadtree* tree) {  // nr. de blocuri (frunze) pentru care scorul s
     }
 }
 
-int largest_square(Quadtree* tree) {  // acelasi principiu ca la height
+int largest_square(Quadtree* tree) {
     if (tree == NULL) {
         return 0;
     } else {
@@ -213,37 +212,37 @@ void write_info(Quadtree* tree, FILE *out, int level) {
         }
         return;
     }
-    write_info(tree->child1, out, level - 1);  // scriu toate nodurile de pe un anumit nivel
+    write_info(tree->child1, out, level - 1);  // recursive call for each child
     write_info(tree->child2, out, level - 1);
     write_info(tree->child3, out, level - 1);
     write_info(tree->child4, out, level - 1);
 }
 
-void write_info_order(Quadtree* tree, FILE *out) {  // scriu in ordine nodurile
+void write_info_order(Quadtree* tree, FILE *out) {
     int i = 0, h = heightTree(tree);
     for (i = 0; i <= h; i++) {
         write_info(tree, out, i);
     }
 }
 
-Quadtree* create_tree(FILE *in, int x, int y, int size, int level) {  // citesc direct din fisierul binar creat si adaug in copac
-    Quadtree* node = malloc(sizeof(struct node));  // initializez primul nod din arbore
+Quadtree* create_tree(FILE *in, int x, int y, int size, int level) {  // create the tree from the information in the binary file
+    Quadtree* node = malloc(sizeof(struct node));
     node->x = x;
     node->y = y;
     node->child1 = NULL;
     node->child2 = NULL;
     node->child3 = NULL;
     node->child4 = NULL;
-    Queue *q = initQueue();  // ne folosim de o coada, deoarece datele din fisierul binar sunt pe nivel (breadth-first)
+    Queue *q = initQueue();  // we use a queue because the data from the binary file is on level (breadth-first)
     enqueue(q, node);
     while (!isEmptyQueue(q)) {
-        Quadtree *root = dequeue(q);  // scot primul element din coada si il atribui lui root pentru a crea copiii lui node
+        Quadtree *root = dequeue(q);  // remove the first element from the queue and assign it to root to create node's children
         fread(&root->node_type, sizeof(unsigned char), 1, in);
         if (root->node_type == 1) {
             fread(&root->color.red, sizeof(unsigned char), 1, in);
             fread(&root->color.green, sizeof(unsigned char), 1, in);
             fread(&root->color.blue, sizeof(unsigned char), 1, in);
-        } else {  // incep sa creez nodurile copil cu informatiile corespunzatoare
+        } else {  // start creating child nodes with corresponding information
             if (root->child1 == NULL) {
                 root->child1 = malloc(sizeof(struct node));
                 root->child1->x = root->x;
@@ -290,16 +289,16 @@ Quadtree* create_tree(FILE *in, int x, int y, int size, int level) {  // citesc 
             }
         }
     }
-    freeQueue(q);  // eliberez memoria pentru coada
+    freeQueue(q);  // free memory for the queue
     return node;
 }
 
-void decompression(Quadtree* root, ImagePixel** img, int x, int y, int size) {  // procesul invers de la divisions
+void decompression(Quadtree* root, ImagePixel** img, int x, int y, int size) {  // the reverse process from divisions
     int i = 0, j = 0;
     if (root->child1 == NULL && root->child2 == NULL && root->child3 == NULL && root->child4 == NULL) {
         for (i = x; i < x + size; i++) {
             for (j = y; j < y + size; j++) {
-                img[i][j].red = root->color.red;  // iau valorile din arbore si le atribui imaginii
+                img[i][j].red = root->color.red;  // take the values from the tree and assign them to the image
                 img[i][j].green = root->color.green;
                 img[i][j].blue = root->color.blue;
             }
@@ -312,7 +311,7 @@ void decompression(Quadtree* root, ImagePixel** img, int x, int y, int size) {  
     }
 }
 
-void ppm(FILE *out, ImagePixel** img, int size) {  // scriu informatiile din ImagePixel** in fisierul *.ppm
+void ppm(FILE *out, ImagePixel** img, int size) {  // write the information from ImagePixel** into the *.ppm file
     int i = 0, j = 0;
     for (i = 0; i < size; i++) {
         for (j = 0; j < size; j++) {
