@@ -1,0 +1,108 @@
+Punctaj local:
+Cerinta 1 : 20
+Cerinta 2 : 30.0
+Cerinta 3 : 30.0
+Total     : 80.0
+Bonus     : 20.0
+
+In fisierul header tema2.h:
+Am definit: 1) o structura pentru matricea de pixeli din fisierul *.ppm care
+contine cele 3 culori de tipul unsigned char: red, green, blue; 2) o structura
+pentru arborele cuaternar care contine coordonatele (x, y) ale zonei din matricea
+de pixeli atribuite unui nod, dimensiunea zonei atribuite nodului, nivelul la
+care  se afla nodul in arborele cuaternar, structura de culori si cei 4 copii ai
+arborelui; 3) 2 structuri pentru coada, prima pentru nod si a doua pentru coada
+in sine.
+
+Primele 6 functii sunt referitoare la coada: crearea nodului, crearea unei cozi
+goale, verificarea daca o coada este goala, enqueue - adaugarea unui element la
+final, dequeue - eliminarea primului element si freeQueue, eliberarea memoriei.
+
+In functia divisions am creat arborele cuaternar pe baza matricei de pixeli.
+Functia primeste ca parametru matricea de pixeli, un dublu pointer catre root
+astfel incat sa se faca de fiecare data un update cand se creaza un nou nod si
+acesta devine practic noul root. Am initializat primul nod din arbore, alocandu-i
+memorie, iar apoi am inceput sa calculez mediile aritmetice pentru cele 3 culori
+conform cerintei. Am atribuit apoi valoarea respectiva nodului din arbore si am
+actualizat root ca fiind acest nod nou format. Am calculat scorul similaritatii,
+iar in functie de acesta, daca este mai mare decat pragul impus in linia de
+comanda, nodul este de tip 0, adica intern, iar in acest caz am apelat recursiv
+functia de divisions astfel incat sa se formeze in depth fiecare subtree
+corespunzator copilului, pornind de la coordonatele respective si avand dimensiunea
+la jumatate. Daca scorul similaritatii este mai mic decat factorul furnizat,
+nodul este de tip 1, adica este un nod frunza.
+
+Pentru a afla numarul de niveluri din arborele cuaternar, m-am folosit de functia
+heightTree care calculeaza numarul maxim de arce de la nodul radacina pana la cea
+mai indepartata frunza. Am cautat recursiv inaltimea fiecarui copil, apoi am
+comparat aceste inaltimi intre ele si am returnat inaltimea maxima + 1.
+Pentru a calcula numarul de blocuri din imagine pentru care scorul similaritatii
+este mai mic sau egal decat factorul furnizat, am calculat numarul de frunze pe
+fiecare ramura, tot recursiv, si am intors numarul total de frunze din arbore.
+(Daca scorul similaritatii este mai mic sau egal decat pragul impus, acel nod nu se
+mai divide, prin urmare se cauta numarul de frunze).
+
+Pentru dimensiunea laturii patratului pentru cea mai mare zona din imagine care
+a ramas nedivizata, am aplicat acelasi principiu ca la height.
+
+Urmatoarele 2 functii sunt pentru a scrie in fisierul binar. Prin functia
+write_info scriu informatiile pe nivel, iar daca este un nod frunza, scriu si
+valorile RGB. De la nivelul 1, apelez recursiv functia pentru nivelul anterior,
+astfel incat sa parcurg si copiii nodului parinte. Functia write_info_order imi
+scrie in ordine, incepand cu primul nivel si pana la ultimul.
+
+Functia create_tree citeste datele din fisierul binar si creaza in acelasi
+timp arborele cuaternar. Pentru inceput, initializez primul nod din arbore si
+creez o coada goala in care adaug acest prim nod. Coada o folosesc deoarece in
+fisierul binar, nodurile sunt pe nivel. Cat timp am elemente in coada, scot
+primul element, il atribui unui nod oarecare (este un nod general care continua
+constructia arborelui), citesc din fisierul binar tipul acestui nod si verific
+daca este de tip 0 sau 1. Daca este de tip 1, adica nod frunza, citesc urmatoarele
+3 valori din fisier care reprezinta culorile si le atribui nodului. Daca nodul
+este intern, incep sa creez nodurile copii. Aici trebuie scrise informatiile
+pentru fiecare nod, intrucat, in fisier, nodurile sunt pe nivel, iar recursiv
+ar fi asezate in profunzime (depth vs breadth). Adaug apoi fiecare nod copil in
+coada. La final eliberez memoria pentru coada si returnez nodul parinte si implicit
+arborele.
+
+Functia de decompresie atribuie datele din arborele cuaternar in matricea de
+pixeli. Apoi este practic acelasi lucru ca la functia de divisions, doar ca in
+sens invers.
+
+Functia ppm scrie informatiile din matrice in fisierul *.ppm, in partea binara
+corespunzatoare.
+
+Ultima functie elibereaza memoria pentru arbore.
+
+
+In fisierul tema2.c:
+Pentru inceput, am verificat daca numarul de argumente din linia de comanda este
+de 5, astfel incat fisierul de intrare sa fie citit bine, fiind al 4-lea argument.
+Am deschis fisierul *.ppm de unde am citit in format text header-ul: P6, width,
+height si maxColor, apoi, folosindu-ma de fseek, am mutat cursorul un octet la
+dreapta, trecand de whitespace-ul care delimiteaza partea text de partea binara.
+Aloc memorie pentru matricea de pixeli si citesc datele din fisierul binar in
+aceasta. Inchid fisierul *.ppm. Obtin factorul din linia de comanda folosind
+functia atoi care imi transforma sirul de caractere citit in linia de comanda
+intr-un numar int. Initializez arborele cuaternar ca fiind NULL si apelez
+functia divisions care imi creaza arborele. In continuare doar apelez functiile
+corespunzatoare informatiilor pe care le scriu in fisierul text: numarul de
+niveluri, numarul de frunze corespunzator numarului de blocuri din imagine
+pentru care scorul similaritatii este mai mic sau egal decat factorul furnizat
+si dimensiunea laturii patratului pentru cea mai mare zona care a ramas
+nedivizata. Deschid fisierul de iesire text, scriu informatiile corespunzatoare
+si il inchid. Apoi deschid fisierul de iesire binar (argumentul 5 in linia de
+comanda), scriu width (sau height, nu conteaza din moment ce sunt egale) si
+apelez functia de scriere in binar write_info_order care are ca parametru
+arborele si fisierul out. Inchid fisierul si eliberez memoria pentru matrice si
+pentru arbore.
+
+Cand am 4 argumente in linia de comanda, deschid fisierul de intrare care este
+al 3-lea argument. Citesc din fisierul binar primul element, care este dimensiunea
+imaginii. Creez arborele apeland functia create_tree si inchid fisierul de citire.
+Aloc memorie pentru matricea de pixeli, apelez functia de decompresie si deschid
+fisierul de iesire (argumentul 4 din linia de comanda). Scriu in partea tip text
+datele uzuale pentru un fisier *.ppm: P6, width, height si 255, apoi apelez
+functia ppm descrisa mai sus. Eliberez memoria pentru matrice si arbore si inchid
+fisierul.
+
