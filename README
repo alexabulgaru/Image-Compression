@@ -5,7 +5,7 @@ Cerinta 3 : 30.0
 Total     : 80.0
 Bonus     : 20.0
 
-In fisierul header tema2.h:
+In fisierul header image-comp.h:
 Am definit: 1) o structura pentru matricea de pixeli din fisierul *.ppm care
 contine cele 3 culori de tipul unsigned char: red, green, blue; 2) o structura
 pentru arborele cuaternar care contine coordonatele (x, y) ale zonei din matricea
@@ -75,7 +75,7 @@ corespunzatoare.
 Ultima functie elibereaza memoria pentru arbore.
 
 
-In fisierul tema2.c:
+In fisierul image-comp.c:
 Pentru inceput, am verificat daca numarul de argumente din linia de comanda este
 de 5, astfel incat fisierul de intrare sa fie citit bine, fiind al 4-lea argument.
 Am deschis fisierul *.ppm de unde am citit in format text header-ul: P6, width,
