@@ -1,108 +1,29 @@
-Punctaj local:
-Cerinta 1 : 20
-Cerinta 2 : 30.0
-Cerinta 3 : 30.0
-Total     : 80.0
-Bonus     : 20.0
+In the header file image-comp.h:
+I defined: 1) a structure for the pixel matrix from the *.ppm file which contains the three colors of type unsigned char: red, green, blue; 2) a structure for the quaternary tree that contains the coordinates (x, y) of the area from the pixel matrix assigned to a node, the size of the area assigned to the node, the level at which the node is located in the quaternary tree, the color structure and the 4 children of the tree; 3) 2 structures for the queue, the first for the node and the second for the queue itself.
 
-In fisierul header image-comp.h:
-Am definit: 1) o structura pentru matricea de pixeli din fisierul *.ppm care
-contine cele 3 culori de tipul unsigned char: red, green, blue; 2) o structura
-pentru arborele cuaternar care contine coordonatele (x, y) ale zonei din matricea
-de pixeli atribuite unui nod, dimensiunea zonei atribuite nodului, nivelul la
-care  se afla nodul in arborele cuaternar, structura de culori si cei 4 copii ai
-arborelui; 3) 2 structuri pentru coada, prima pentru nod si a doua pentru coada
-in sine.
+The first 6 functions are related to the queue: creating the node, creating an empty queue, checking if a queue is empty, enqueue - adding an element at the end, dequeue - removing the first element, and freeQueue, freeing memory.
 
-Primele 6 functii sunt referitoare la coada: crearea nodului, crearea unei cozi
-goale, verificarea daca o coada este goala, enqueue - adaugarea unui element la
-final, dequeue - eliminarea primului element si freeQueue, eliberarea memoriei.
+In the divisions function, I created the quaternary tree based on the pixel matrix. The function receives as a parameter the pixel matrix, a double pointer to the root so that an update is made each time a new node is created and this becomes practically the new root. I initialized the first node in the tree, allocating memory to it, and then I started to calculate the arithmetic averages for the three colors according to the requirement. I then assigned the respective value to the node in the tree and updated the root as this newly formed node. I calculated the similarity score, and depending on this, if it is greater than the threshold imposed on the command line, the node is of type 0, i.e. internal, and in this case, I recursively called the divisions function so that each subtree corresponding to the child is formed in depth, starting from the respective coordinates and having the size halved. If the similarity score is less than the provided factor, the node is of type 1, i.e. it is a leaf node.
 
-In functia divisions am creat arborele cuaternar pe baza matricei de pixeli.
-Functia primeste ca parametru matricea de pixeli, un dublu pointer catre root
-astfel incat sa se faca de fiecare data un update cand se creaza un nou nod si
-acesta devine practic noul root. Am initializat primul nod din arbore, alocandu-i
-memorie, iar apoi am inceput sa calculez mediile aritmetice pentru cele 3 culori
-conform cerintei. Am atribuit apoi valoarea respectiva nodului din arbore si am
-actualizat root ca fiind acest nod nou format. Am calculat scorul similaritatii,
-iar in functie de acesta, daca este mai mare decat pragul impus in linia de
-comanda, nodul este de tip 0, adica intern, iar in acest caz am apelat recursiv
-functia de divisions astfel incat sa se formeze in depth fiecare subtree
-corespunzator copilului, pornind de la coordonatele respective si avand dimensiunea
-la jumatate. Daca scorul similaritatii este mai mic decat factorul furnizat,
-nodul este de tip 1, adica este un nod frunza.
+To find out the number of levels in the quaternary tree, I used the heightTree function which calculates the maximum number of arcs from the root node to the farthest leaf. I recursively searched the height of each child, then compared these heights between them and returned the maximum height + 1.
+To calculate the number of blocks in the image for which the similarity score is less than or equal to the provided factor, I calculated the number of leaves on each branch, also recursively, and returned the total number of leaves in the tree. (If the similarity score is less than or equal to the imposed threshold, that node is not divided anymore, therefore the number of leaves is searched).
 
-Pentru a afla numarul de niveluri din arborele cuaternar, m-am folosit de functia
-heightTree care calculeaza numarul maxim de arce de la nodul radacina pana la cea
-mai indepartata frunza. Am cautat recursiv inaltimea fiecarui copil, apoi am
-comparat aceste inaltimi intre ele si am returnat inaltimea maxima + 1.
-Pentru a calcula numarul de blocuri din imagine pentru care scorul similaritatii
-este mai mic sau egal decat factorul furnizat, am calculat numarul de frunze pe
-fiecare ramura, tot recursiv, si am intors numarul total de frunze din arbore.
-(Daca scorul similaritatii este mai mic sau egal decat pragul impus, acel nod nu se
-mai divide, prin urmare se cauta numarul de frunze).
+For the size of the square side for the largest area in the image that remained undivided, I applied the same principle as at height.
 
-Pentru dimensiunea laturii patratului pentru cea mai mare zona din imagine care
-a ramas nedivizata, am aplicat acelasi principiu ca la height.
+The next 2 functions are to write to the binary file. Through the write_info function, I write the information on the level, and if it is a leaf node, I also write the RGB values. From level 1, I recursively call the function for the previous level, so that I also go through the children of the parent node. The write_info_order function writes to me in order, starting with the first level and up to the last.
 
-Urmatoarele 2 functii sunt pentru a scrie in fisierul binar. Prin functia
-write_info scriu informatiile pe nivel, iar daca este un nod frunza, scriu si
-valorile RGB. De la nivelul 1, apelez recursiv functia pentru nivelul anterior,
-astfel incat sa parcurg si copiii nodului parinte. Functia write_info_order imi
-scrie in ordine, incepand cu primul nivel si pana la ultimul.
+The create_tree function reads the data from the binary file and creates the quaternary tree at the same time. To start, I initialize the first node in the tree and create an empty queue in which I add this first node. I use the queue because in the binary file, the nodes are on the level. As long as I have elements in the queue, I remove the first element, assign it to a certain node (it is a general node that continues the construction of the tree), read from the binary file the type of this node and check if it is type 0 or 1. If it is type 1, i.e. leaf node, I read the next 3 values from the file which represent the colors and assign them to the node. If the node is internal, I start creating the child nodes. Here the information for each node must be written, because in the file, the nodes are on the level, and recursively they would be arranged in depth (depth vs breadth). I then add each child node to the queue. Finally, I free the memory for the queue and return the parent node and implicitly the tree.
 
-Functia create_tree citeste datele din fisierul binar si creaza in acelasi
-timp arborele cuaternar. Pentru inceput, initializez primul nod din arbore si
-creez o coada goala in care adaug acest prim nod. Coada o folosesc deoarece in
-fisierul binar, nodurile sunt pe nivel. Cat timp am elemente in coada, scot
-primul element, il atribui unui nod oarecare (este un nod general care continua
-constructia arborelui), citesc din fisierul binar tipul acestui nod si verific
-daca este de tip 0 sau 1. Daca este de tip 1, adica nod frunza, citesc urmatoarele
-3 valori din fisier care reprezinta culorile si le atribui nodului. Daca nodul
-este intern, incep sa creez nodurile copii. Aici trebuie scrise informatiile
-pentru fiecare nod, intrucat, in fisier, nodurile sunt pe nivel, iar recursiv
-ar fi asezate in profunzime (depth vs breadth). Adaug apoi fiecare nod copil in
-coada. La final eliberez memoria pentru coada si returnez nodul parinte si implicit
-arborele.
+The decompression function assigns the data from the quaternary tree to the pixel matrix. Then it is practically the same thing as the divisions function, only in reverse.
 
-Functia de decompresie atribuie datele din arborele cuaternar in matricea de
-pixeli. Apoi este practic acelasi lucru ca la functia de divisions, doar ca in
-sens invers.
+The ppm function writes the information from the matrix to the *.ppm file, in the corresponding binary part.
 
-Functia ppm scrie informatiile din matrice in fisierul *.ppm, in partea binara
-corespunzatoare.
-
-Ultima functie elibereaza memoria pentru arbore.
+The last function frees the memory for the tree.
 
 
-In fisierul image-comp.c:
-Pentru inceput, am verificat daca numarul de argumente din linia de comanda este
-de 5, astfel incat fisierul de intrare sa fie citit bine, fiind al 4-lea argument.
-Am deschis fisierul *.ppm de unde am citit in format text header-ul: P6, width,
-height si maxColor, apoi, folosindu-ma de fseek, am mutat cursorul un octet la
-dreapta, trecand de whitespace-ul care delimiteaza partea text de partea binara.
-Aloc memorie pentru matricea de pixeli si citesc datele din fisierul binar in
-aceasta. Inchid fisierul *.ppm. Obtin factorul din linia de comanda folosind
-functia atoi care imi transforma sirul de caractere citit in linia de comanda
-intr-un numar int. Initializez arborele cuaternar ca fiind NULL si apelez
-functia divisions care imi creaza arborele. In continuare doar apelez functiile
-corespunzatoare informatiilor pe care le scriu in fisierul text: numarul de
-niveluri, numarul de frunze corespunzator numarului de blocuri din imagine
-pentru care scorul similaritatii este mai mic sau egal decat factorul furnizat
-si dimensiunea laturii patratului pentru cea mai mare zona care a ramas
-nedivizata. Deschid fisierul de iesire text, scriu informatiile corespunzatoare
-si il inchid. Apoi deschid fisierul de iesire binar (argumentul 5 in linia de
-comanda), scriu width (sau height, nu conteaza din moment ce sunt egale) si
-apelez functia de scriere in binar write_info_order care are ca parametru
-arborele si fisierul out. Inchid fisierul si eliberez memoria pentru matrice si
-pentru arbore.
+In the image-comp.c file:
+To start, I checked if the number of arguments from the command line is 5, so that the input file is read correctly, being the 4th argument. I opened the *.ppm file from where I read in text format the header: P6, width, height, and maxColor, then, using fseek, I moved the cursor one byte to the right, passing the whitespace that delimits the text part from the binary part. I allocate memory for the pixel matrix and read the data from the binary file into it. I close the *.ppm file. I get the factor from the command line using the atoi function which transforms the string of characters read in the command line into an int number. I initialize the quaternary tree as being NULL and call the divisions function which creates the tree. From now on I just call the functions corresponding to the information I write in the text file: the number of levels, the number of leaves corresponding to the number of blocks in the image for which the similarity score is less than or equal to the provided factor and the size of the square side for the largest area that remained undivided. I open the output text file, write the corresponding information and close it. Then I open the binary output file (argument 5 in the command line), write width (or height, it doesn't matter since they are equal) and call the binary writing function write_info_order which has as parameters the tree and the out file. I close the file and free the memory for the matrix and the tree.
 
-Cand am 4 argumente in linia de comanda, deschid fisierul de intrare care este
-al 3-lea argument. Citesc din fisierul binar primul element, care este dimensiunea
-imaginii. Creez arborele apeland functia create_tree si inchid fisierul de citire.
-Aloc memorie pentru matricea de pixeli, apelez functia de decompresie si deschid
-fisierul de iesire (argumentul 4 din linia de comanda). Scriu in partea tip text
-datele uzuale pentru un fisier *.ppm: P6, width, height si 255, apoi apelez
-functia ppm descrisa mai sus. Eliberez memoria pentru matrice si arbore si inchid
-fisierul.
+When I have 4 arguments on the command line, I open the input file which is the 3rd argument. I read from the binary file the first element, which is the size of the image. I create the tree by calling the create_tree function and close the reading file. I allocate memory for the pixel matrix, call the decompression function and open the output file (argument 4 on the command line). I write in the text part the usual data for a *.ppm file: P6, width, height, and 255, then I call the ppm function described above. I free the memory for the matrix and the tree and close the file.
+
 
